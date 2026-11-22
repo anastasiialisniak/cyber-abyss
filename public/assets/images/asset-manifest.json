@@ -1,0 +1,169 @@
+{
+  "canvas": {
+    "width": 480,
+    "height": 800
+  },
+  "physics": {
+    "player": [
+      24,
+      24
+    ],
+    "platformHeight": 16,
+    "obstacle": [
+      24,
+      24
+    ]
+  },
+  "assets": [
+    {
+      "file": "runner-idle.svg",
+      "path": "/assets/images/runner-idle.svg",
+      "width": 24,
+      "height": 24,
+      "purpose": "24×24 cyber courier, transparent; geometry fits the existing body",
+      "integration": "Dev 1: load.svg, replace rectangle with sprite at 1:1; keep body 24×24.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "runner-fall-a.svg",
+      "path": "/assets/images/runner-fall-a.svg",
+      "width": 24,
+      "height": 24,
+      "purpose": "Falling state A",
+      "integration": "Dev 1: alternate with runner-fall-b at 8 fps; same origin/body.",
+      "animation": "Optional 2-frame loop, 8 fps",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "runner-fall-b.svg",
+      "path": "/assets/images/runner-fall-b.svg",
+      "width": 24,
+      "height": 24,
+      "purpose": "Falling state B",
+      "integration": "Dev 1: Phaser animation from two SVG texture keys.",
+      "animation": "Optional 2-frame loop, 8 fps",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "platform-left.svg",
+      "path": "/assets/images/platform-left.svg",
+      "width": 8,
+      "height": 16,
+      "purpose": "Left end cap, safe platform",
+      "integration": "Dev 2: 8 px cap, top aligned to body top; do not stretch cap.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "platform-tile.svg",
+      "path": "/assets/images/platform-tile.svg",
+      "width": 16,
+      "height": 16,
+      "purpose": "Horizontally seamless middle tile",
+      "integration": "Dev 2: TileSprite(width-16,16) between 8 px caps, origin 0; minimum width 16; same top/body height.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "platform-right.svg",
+      "path": "/assets/images/platform-right.svg",
+      "width": 8,
+      "height": 16,
+      "purpose": "Right end cap",
+      "integration": "Dev 2: 8 px cap; compose around the existing collision object, refresh static body only when size changes.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "platform-moving-left.svg",
+      "path": "/assets/images/platform-moving-left.svg",
+      "width": 8,
+      "height": 16,
+      "purpose": "Left end cap, reserved moving style",
+      "integration": "Dev 2: 8 px cap, top aligned to body top; do not stretch cap.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "platform-moving-tile.svg",
+      "path": "/assets/images/platform-moving-tile.svg",
+      "width": 16,
+      "height": 16,
+      "purpose": "Horizontally seamless middle tile",
+      "integration": "Dev 2: TileSprite(width-16,16) between 8 px caps, origin 0; minimum width 16; same top/body height.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "platform-moving-right.svg",
+      "path": "/assets/images/platform-moving-right.svg",
+      "width": 8,
+      "height": 16,
+      "purpose": "Right end cap",
+      "integration": "Dev 2: 8 px cap; compose around the existing collision object, refresh static body only when size changes.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "hazard-mine.svg",
+      "path": "/assets/images/hazard-mine.svg",
+      "width": 24,
+      "height": 24,
+      "purpose": "24×24 hazard with transparent corners, red spikes and warning core",
+      "integration": "Dev 2: load.svg; replace rectangle at 24×24, keep existing rectangular collision box. Transparent corner pixels do NOT remove collision.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "abyss-base.svg",
+      "path": "/assets/images/abyss-base.svg",
+      "width": 480,
+      "height": 800,
+      "purpose": "Opaque base, seamless vertically (gradient returns to identical top/bottom edges)",
+      "integration": "Dev 1: load.svg; tileSprite(0,0,480,800,key).setOrigin(0).setScrollFactor(0).setDepth(-30); tilePositionY = camera.scrollY * 0.08.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "abyss-circuits.svg",
+      "path": "/assets/images/abyss-circuits.svg",
+      "width": 480,
+      "height": 800,
+      "purpose": "Transparent midground, vertically repeating circuitry",
+      "integration": "Dev 1: same TileSprite setup, depth -20; tilePositionY = camera.scrollY * 0.2.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "abyss-rails.svg",
+      "path": "/assets/images/abyss-rails.svg",
+      "width": 480,
+      "height": 800,
+      "purpose": "Transparent foreground side rails; central playfield clear",
+      "integration": "Dev 1: TileSprite depth -10; factor 0; tilePositionY = camera.scrollY * 0.55; visual rails are not new collision boundaries.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "control-left.svg",
+      "path": "/assets/images/control-left.svg",
+      "width": 64,
+      "height": 64,
+      "purpose": "Touch control artwork, transparent rounded corners",
+      "integration": "Dev 1: fixed bottom-left interactive image, hit area >=64×64 game px; pointerdown/up/out + blur release; map pointer state into movement intent. Do not simulate global keyboard events.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    },
+    {
+      "file": "control-right.svg",
+      "path": "/assets/images/control-right.svg",
+      "width": 64,
+      "height": 64,
+      "purpose": "Touch control artwork, matching right direction",
+      "integration": "Dev 1: fixed bottom-right, multi-pointer left/right support; release state on shutdown and pointercancel.",
+      "animation": "none",
+      "license": "Original Cyber Abyss project artwork"
+    }
+  ]
+}
