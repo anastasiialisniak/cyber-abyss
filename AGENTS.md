@@ -6,22 +6,22 @@ Cyber Abyss is a 2D vertical falling platformer with a cyberpunk atmosphere.
 
 The player descends through a digital abyss, lands on platforms, avoids obstacles and tries to achieve the highest score.
 
-The project is being developed by two developers for a hackathon.
+The project is being developed by four developers for a hackathon.
 
 ## 2. Technology Stack
 
 - JavaScript (ES Modules)
-- Phaser 3
+- Phaser 3 (pinned to 3.90.0)
 - Phaser Arcade Physics
 - Vite
 - HTML5
 - CSS3
 
-Do not introduce additional frameworks or dependencies without approval from both developers.
+Do not introduce additional frameworks or dependencies without approval from all developers.
 
 ## 3. Team Responsibilities
 
-### Developer 1 — Game Core Developer
+### Developer 1 — Core Gameplay
 
 Tool: Google Antigravity
 
@@ -31,14 +31,10 @@ Responsibilities:
 
 - Game initialization and configuration.
 - Player movement and physics.
-- Platform mechanics.
-- Obstacle mechanics.
-- Collision detection.
+- Collision detection setup.
 - Camera movement.
-- Procedural world generation.
-- Gameplay logic.
-- Score calculation.
-- Integration of game components.
+- Gameplay logic and game-over conditions.
+- Integration of game components in `GameScene`.
 
 Owned files:
 
@@ -47,12 +43,24 @@ Owned files:
 - `src/scenes/BootScene.js`
 - `src/scenes/GameScene.js`
 - `src/entities/Player.js`
+
+### Developer 2 — World & Level Systems
+
+Git branch: `feature/world-systems`
+
+Responsibilities:
+
+- Platform mechanics.
+- Obstacle mechanics.
+- Procedural world generation and cleanup of off-screen objects.
+
+Owned files:
+
 - `src/entities/Platform.js`
 - `src/entities/Obstacle.js`
 - `src/systems/WorldGenerator.js`
-- `src/utils/constants.js`
 
-### Developer 2 — UI & Visual Developer
+### Developer 3 — UI/UX & Visual Design
 
 Tool: OpenAI Codex
 
@@ -65,9 +73,9 @@ Responsibilities:
 - HUD and score display.
 - UI animations.
 - Cyberpunk visual design.
-- Neon effects.
+- Neon effects (styling and UI).
 - CSS styling.
-- Visual assets and sound effects.
+- Visual assets.
 
 Owned files:
 
@@ -75,7 +83,38 @@ Owned files:
 - `src/scenes/GameOverScene.js`
 - `src/ui/HUD.js`
 - `src/styles/style.css`
-- `public/assets/`
+- `public/assets/images/`
+- `public/assets/fonts/`
+
+### Developer 4 — Game Systems, Effects & QA
+
+Git branch: `feature/game-systems`
+
+Responsibilities:
+
+- Score calculation and best score.
+- Game state management.
+- Audio: sound effects and music.
+- Particle and screen effects.
+- Testing and QA of the integrated game.
+
+Owned files:
+
+- `src/systems/ScoreManager.js`
+- `src/systems/GameStateManager.js`
+- `src/audio/AudioManager.js`
+- `src/effects/ParticleEffects.js`
+- `src/effects/ScreenEffects.js`
+- `public/assets/audio/`
+
+### Shared files
+
+Changed only after agreement of all developers (see section 7):
+
+- `src/utils/constants.js`
+- `index.html`
+- `package.json`, `package-lock.json`
+- `ARCHITECTURE.md`, `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `TASKS.md`
 
 ## 4. Architecture Rules
 
@@ -95,18 +134,21 @@ Do not independently change the architecture.
 
 ## 5. Component Interaction
 
-The following interfaces must remain consistent:
+The following interfaces must remain consistent (full signatures are in `ARCHITECTURE.md`, section 6):
 
+- `BootScene` starts `MenuScene`.
 - `MenuScene` starts `GameScene`.
-- `GameScene` controls the gameplay lifecycle.
+- `GameScene` controls the gameplay lifecycle and is the only module that integrates the others.
 - `GameScene` creates and updates `HUD`.
-- `HUD` provides `updateScore(score)`, `updateBestScore(score)` and `destroy()`.
-- `GameScene` passes final results to `GameOverScene`.
-- `GameOverScene` provides a restart action.
+- `HUD` provides `updateScore(score)`, `updateBestScore(bestScore)` and `destroy()`.
+- `GameScene` passes final results `{ score, bestScore }` to `GameOverScene`.
+- `GameOverScene` provides a restart action that starts `GameScene`.
+- `GameStateManager` (`READY`, `PLAYING`, `GAME_OVER`) never starts Phaser scenes itself.
+- `Player.update(time, delta)`, `ScoreManager.updateScore(playerY)`, `WorldGenerator.generateBelow(y)` and `cleanup(cameraY)` are called by `GameScene`.
 
-Do not rename scene keys, public methods or change method parameters without agreement from both developers.
+Do not rename scene keys, public methods or change method parameters without agreement of all developers.
 
-If an interface needs to change, notify the other developer first.
+If an interface needs to change, notify the other developers first.
 
 ## 6. Code Quality
 
@@ -118,13 +160,15 @@ If an interface needs to change, notify the other developer first.
 - Use meaningful variable and function names.
 - Handle errors appropriately.
 - Clean up event listeners and game objects when necessary.
-- Do not leave unfinished placeholder implementations in completed features.
+- Do not leave unfinished placeholder implementations in completed features. Current stubs are listed in `TASKS.md` and must be replaced by their owners.
 
 ## 7. File Ownership Rules
 
 Each developer must primarily modify files assigned to their responsibility.
 
 Do not overwrite or restructure another developer's files without prior coordination.
+
+Two developers must not edit the same file at the same time without agreement.
 
 Shared files must be modified only after agreement.
 
@@ -144,8 +188,10 @@ Main branch:
 
 Developer branches:
 
-- `feature/game-core`
-- `feature/ui-design`
+- `feature/game-core` — Developer 1
+- `feature/world-systems` — Developer 2
+- `feature/ui-design` — Developer 3
+- `feature/game-systems` — Developer 4
 
 Rules:
 
@@ -155,9 +201,11 @@ Rules:
 - Commit changes regularly.
 - Use descriptive commit messages.
 - Push changes to your own branch.
-- Integrate changes through Pull Requests.
-- Test the game after integration.
+- Integrate changes through Pull Requests into `main`, reviewed by at least one other developer.
+- Test the game after integration (`npm run dev`, `npm run build`).
 - Never force-push or overwrite another developer's work.
+
+See `CONTRIBUTING.md` for the detailed workflow.
 
 ## 9. Development Priorities
 
