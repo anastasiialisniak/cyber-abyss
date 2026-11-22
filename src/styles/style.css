@@ -1,0 +1,15 @@
+/* Owner: UI/UX & Visual Design. Minimal base styles only. */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #05050f;
+  overflow: hidden;
+}
+
+#game {
+  width: 100%;
+  height: 100%;
+}

@@ -1,232 +1,102 @@
 # Cyber Abyss — System Architecture
 
-## 1. Project Overview
+Source of truth for technical decisions. Interface changes require agreement of all four developers.
 
-Cyber Abyss is a 2D vertical falling platformer with a cyberpunk atmosphere.
+## 1. Overview
 
-The player descends through a digital abyss, lands on platforms, avoids obstacles and tries to achieve the highest score.
-
-The game is designed as a browser-based application.
+2D vertical falling platformer with a cyberpunk atmosphere. The player descends through a digital abyss, lands on platforms, avoids obstacles and chases the best score. Browser game.
 
 ## 2. Technology Stack
 
-- JavaScript (ES Modules)
-- Phaser 3
-- Phaser Arcade Physics
-- Vite
-- HTML5
-- CSS3
+- JavaScript (ES Modules), Phaser **3.90.0** (pinned), Arcade Physics, Vite, HTML5, CSS3.
+- No additional dependencies without team agreement.
 
-No additional frameworks or dependencies should be introduced without agreement between both developers.
-
-## 3. Architecture Principles
-
-The project follows a modular architecture.
-
-Each module has one primary responsibility.
-
-Main principles:
-
-- Separation of gameplay logic and UI.
-- Reusable game entities.
-- Clear component interfaces.
-- Minimal dependencies between modules.
-- Centralized configuration.
-- Consistent naming conventions.
-
-## 4. Project Structure
+## 3. Structure
 
 ```text
-cyber-abyss/
-│
-├── public/
-│   └── assets/
-│       ├── images/
-│       ├── sprites/
-│       └── sounds/
-│
-├── src/
-│   ├── main.js
-│   ├── config.js
-│   │
-│   ├── scenes/
-│   │   ├── BootScene.js
-│   │   ├── MenuScene.js
-│   │   ├── GameScene.js
-│   │   └── GameOverScene.js
-│   │
-│   ├── entities/
-│   │   ├── Player.js
-│   │   ├── Platform.js
-│   │   └── Obstacle.js
-│   │
-│   ├── systems/
-│   │   └── WorldGenerator.js
-│   │
-│   ├── ui/
-│   │   └── HUD.js
-│   │
-│   ├── styles/
-│   │   └── style.css
-│   │
-│   └── utils/
-│       └── constants.js
-│
-├── .agent/
-│   └── rules/
-│       └── project-rules.md
-│
-├── AGENTS.md
-├── ARCHITECTURE.md
-├── CONTRIBUTING.md
-├── TASKS.md
-├── README.md
-├── package.json
-├── package-lock.json
-├── vite.config.js
-└── .gitignore
+index.html                  # Vite entry, <div id="game">
+src/
+├── main.js                 # creates Phaser.Game, imports CSS
+├── config.js               # Phaser config + scene registration (export gameConfig)
+├── scenes/   BootScene, MenuScene, GameScene, GameOverScene
+├── entities/ Player, Platform, Obstacle
+├── systems/  WorldGenerator, ScoreManager, GameStateManager
+├── ui/       HUD
+├── effects/  ParticleEffects, ScreenEffects
+├── audio/    AudioManager
+├── styles/   style.css
+└── utils/    constants.js  # SCENE_KEYS, GAME_STATES, EVENTS, COLORS, STORAGE_KEYS, PHYSICS, size
+public/assets/ images/ audio/ fonts/   # served at /assets/...
 ```
 
-## 5. Module Responsibilities
+Every module is a `default export` class (constants are named exports).
 
-### 5.1 main.js
+## 4. Ownership
 
-Application entry point.
+| # | Role | Files |
+|---|------|-------|
+| 1 | Core Gameplay | `scenes/GameScene.js`, `scenes/BootScene.js`, `entities/Player.js`, `main.js`, `config.js` |
+| 2 | World & Level Systems | `entities/Platform.js`, `entities/Obstacle.js`, `systems/WorldGenerator.js` |
+| 3 | UI/UX & Visual Design | `scenes/MenuScene.js`, `scenes/GameOverScene.js`, `ui/HUD.js`, `styles/style.css`, `public/assets/images/`, `public/assets/fonts/` |
+| 4 | Game Systems, Effects & QA | `systems/ScoreManager.js`, `systems/GameStateManager.js`, `audio/AudioManager.js`, `effects/*`, `public/assets/audio/` |
 
-Responsibilities:
+Shared: `utils/constants.js`, `index.html`, `package.json`, `ARCHITECTURE.md` — change only by agreement.
 
-- Initialize the Phaser game.
-- Import the game configuration.
-- Register game scenes.
+## 5. Scene flow and lifecycle
 
-### 5.2 config.js
+```text
+BootScene → MenuScene → GameScene → GameOverScene
+                ▲            ▲              │
+                └── (restart) ──────────────┘ (restart → GameScene)
+```
 
-Central Phaser configuration.
+- Scene keys: `SCENE_KEYS.BOOT | MENU | GAME | GAME_OVER` (values `BootScene`, `MenuScene`, `GameScene`, `GameOverScene`). Do not rename.
+- `BootScene` is first in `config.scene`; loads shared assets, then starts `MenuScene`.
+- `MenuScene` starts `GameScene`.
+- `GameScene.create()` builds everything from scratch (restart-safe), calls `stateManager.startGame()`. `update(time, delta)` runs only while state is `PLAYING`. Cleanup runs on scene `SHUTDOWN`.
+- Game end: `GameScene.endGame()` (public, idempotent) → `stateManager.endGame()` → `scene.start('GameOverScene', { score, bestScore })`.
+- `GameOverScene.init(data)` reads `{ score, bestScore }`; `restart()` starts `GameScene`.
 
-Responsibilities:
+## 6. Module contracts (approved)
 
-- Set canvas dimensions.
-- Configure Arcade Physics.
-- Define rendering settings.
-- Register initial scenes.
+Phaser-dependent classes take `scene` as the first constructor argument. Pure-logic classes (`ScoreManager`, `GameStateManager`) have **no Phaser dependency**.
 
-### 5.3 BootScene.js
+| Class | Constructor | Public methods |
+|-------|-------------|----------------|
+| `Player` | `(scene)` | `create(x, y)` → this, `update(time, delta)`, `getPosition()` → `{x, y}`, `getGameObject()`, `destroy()` |
+| `Platform` | `(scene, group?)` | `create(x, y, width)` → this, `getGameObject()`, `destroy()` |
+| `Obstacle` | `(scene, group?)` | `create(x, y)` → this, `getGameObject()`, `destroy()` |
+| `WorldGenerator` | `(scene, platformGroup, obstacleGroup)` | `generateInitialWorld()`, `generateBelow(y)`, `cleanup(cameraY)` |
+| `ScoreManager` | `()` | `updateScore(playerY)` → score, `getScore()`, `getBestScore()`, `reset()` (best is kept) |
+| `GameStateManager` | `()` | `startGame()`, `endGame()`, `getState()` → `GAME_STATES.*` |
+| `HUD` | `(scene)` | `updateScore(score)`, `updateBestScore(bestScore)`, `destroy()` |
+| `AudioManager` | `(scene)` | `playSound(key)`, `playMusic(key)`, `stopMusic()` |
+| `ParticleEffects`, `ScreenEffects` | `(scene)` | `destroy()` + methods added by owner #4 and agreed with GameScene |
 
-Initial game preparation.
+Changes versus the preliminary contract (to fit Phaser 3):
 
-Responsibilities:
+- Entities take `scene` in the constructor; `create(x, y[, width])` takes positions.
+- `Player.update(time, delta)` instead of `update()` — matches Phaser's `Scene.update` and frame-rate independent movement.
+- `Platform`/`Obstacle` get an optional physics **group** that `GameScene` owns; `GameScene` sets colliders on groups, not per object, so generated/destroyed objects need no collider bookkeeping.
+- `ScoreManager.updateScore(playerY)` returns the score; `reset()` clears only the current score.
+- `WorldGenerator.generateBelow(y)` receives a world-Y; `cleanup(cameraY)` receives the camera's top edge (`camera.scrollY`).
+- `GameStateManager` states: `READY → PLAYING → GAME_OVER`; it never starts scenes.
 
-- Load required assets.
-- Prepare resources.
-- Transition to MenuScene.
+## 7. Interaction
 
-### 5.4 MenuScene.js
+`GameScene` is the only integrator. It creates the groups, all modules and the colliders; per frame it calls `player.update` → `scoreManager.updateScore(player.y)` → `hud.updateScore/updateBestScore` → `worldGenerator.generateBelow/cleanup`. Modules do not import each other (except entities used by `WorldGenerator`); they communicate through `GameScene` or the event names in `EVENTS`.
 
-Main menu.
+HUD must use `setScrollFactor(0)` so it stays on screen while the camera moves.
 
-Responsibilities:
+## 8. Commands
 
-- Display game title.
-- Display Play button.
-- Display basic instructions.
-- Start GameScene.
+```bash
+npm install
+npm run dev       # Vite dev server
+npm run build     # production build to dist/
+npm run preview   # serve dist/
+```
 
-### 5.5 GameScene.js
+## 9. Current status
 
-Main gameplay controller.
-
-Responsibilities:
-
-- Create gameplay entities.
-- Initialize the world.
-- Manage gameplay updates.
-- Control camera movement.
-- Coordinate game systems.
-- Update HUD.
-- Detect game over.
-- Pass final results to GameOverScene.
-
-GameScene coordinates gameplay but should not contain all entity and generation logic.
-
-### 5.6 Player.js
-
-Player entity.
-
-Responsibilities:
-
-- Create player object.
-- Handle horizontal movement.
-- Apply movement limits.
-- Handle player physics.
-- Expose player position and state.
-
-### 5.7 Platform.js
-
-Platform entity.
-
-Responsibilities:
-
-- Create platforms.
-- Configure platform collision behavior.
-- Define platform types if needed.
-- Handle platform-specific properties.
-
-### 5.8 Obstacle.js
-
-Obstacle entity.
-
-Responsibilities:
-
-- Create hazards.
-- Define obstacle behavior.
-- Configure collision properties.
-
-### 5.9 WorldGenerator.js
-
-Procedural world generation system.
-
-Responsibilities:
-
-- Generate platforms.
-- Generate obstacles.
-- Control platform spacing.
-- Manage generated world objects.
-- Remove objects outside the active camera area.
-
-### 5.10 HUD.js
-
-Heads-up display.
-
-Responsibilities:
-
-- Display current score.
-- Display best score.
-- Update score information.
-- Clean up UI objects.
-
-HUD must not control player physics or gameplay mechanics.
-
-### 5.11 GameOverScene.js
-
-Game over interface.
-
-Responsibilities:
-
-- Display final score.
-- Display best score.
-- Provide Restart button.
-- Return to a new game session.
-
-### 5.12 constants.js
-
-Centralized game constants.
-
-Responsibilities:
-
-- Store shared gameplay values.
-- Store configuration constants.
-- Avoid unnecessary hardcoded values.
-
-## 6. Scene Flow
-
-The game follows this
+Scaffolding only: all modules are stubs implementing the contracts above. Temporary pieces to remove/replace: placeholder rectangles in entities, text stubs in `MenuScene`/`GameOverScene`/`HUD`, and the dev-only `ESC` key in `GameScene` that ends the run. Colliders in `GameScene` are marked `TODO(Core Gameplay)`.
