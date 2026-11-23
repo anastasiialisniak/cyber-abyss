@@ -25,7 +25,7 @@ export default class WorldGenerator {
     }
 
     // The player starts at y=100; this first platform catches the initial fall.
-    this.addPlatform(GAME_WIDTH / 2, 165, PLATFORM_MAX_WIDTH);
+    this.addPlatform(GAME_WIDTH / 2, 165, PLATFORM_MAX_WIDTH, false);
     this.generatedThroughY = 165;
     this.generateBelow(GAME_HEIGHT + 400);
   }
@@ -64,12 +64,12 @@ export default class WorldGenerator {
     this.obstacles = this.removePassedObjects(this.obstacles, cutoffY);
   }
 
-  addPlatform(x, y, width) {
+  addPlatform(x, y, width, allowObstacle = true) {
     const platform = new Platform(this.scene, this.platformGroup).create(x, y, width);
     this.platforms.push({ entity: platform, y });
 
     // Keep occasional hazards at an edge, leaving a wide clear landing area.
-    if (width >= PLATFORM_MIN_WIDTH + 8 && Math.random() < OBSTACLE_CHANCE) {
+    if (allowObstacle && width >= PLATFORM_MIN_WIDTH + 8 && Math.random() < OBSTACLE_CHANCE) {
       const side = Math.random() < 0.5 ? -1 : 1;
       const obstacleX = x + side * (width / 2 - EDGE_CLEARANCE);
       const obstacleY = y - PLATFORM_HALF_HEIGHT - 12;
@@ -80,7 +80,7 @@ export default class WorldGenerator {
 
   removePassedObjects(objects, cutoffY) {
     return objects.filter(({ entity, y }) => {
-      if (y >= cutoffY) {
+      if (y >= cutoffY && entity.getGameObject()?.active) {
         return true;
       }
       entity.destroy();
@@ -90,9 +90,12 @@ export default class WorldGenerator {
 }
 const PLATFORM_MIN_WIDTH = 100;
 const PLATFORM_MAX_WIDTH = 130;
-const PLATFORM_MIN_GAP = 105;
-const PLATFORM_MAX_GAP = 135;
-const MAX_HORIZONTAL_SHIFT = 110;
+// With 900 px/s² gravity, a 120 px fall lasts about 0.52 s. The player's
+// 280 px/s horizontal cap allows about 122 px of travel from rest in that time; limiting
+// shifts to 80 px keeps the target comfortably within reach from rest.
+const PLATFORM_MIN_GAP = 100;
+const PLATFORM_MAX_GAP = 120;
+const MAX_HORIZONTAL_SHIFT = 80;
 const PLATFORM_HALF_HEIGHT = 8;
 const CLEANUP_BUFFER = 300;
 const OBSTACLE_CHANCE = 0.18;

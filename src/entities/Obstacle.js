@@ -25,9 +25,7 @@ export default class Obstacle {
   }
 
   destroy() {
-    if (this.gameObject?.active) {
-      this.gameObject.destroy();
-    }
+    this.gameObject?.destroy();
     this.gameObject = null;
   }
 }
