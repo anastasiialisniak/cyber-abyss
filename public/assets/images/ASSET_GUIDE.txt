@@ -1,0 +1,75 @@
+CYBER ABYSS — ART INTEGRATION HANDOFF
+All image paths below are served from /assets/images/. See asset-manifest.json for every file, dimensions, animation and owner action.
+
+ARTWORK
+15 original SVGs, no external references, fonts, scripts or linked images inside SVG.
+Native canvas 480x800. SVG viewport sizes are explicit.
+Artwork follows existing cyan / purple / pink UI; only hazards use bright red.
+Transparent images have no background rectangle. Collision remains rectangular regardless of alpha.
+
+DEV 1 — LOAD AND PLAYER (not implemented here)
+In BootScene.preload, for every manifest entry:
+  this.load.svg(key, entry.path, { width: entry.width, height: entry.height });
+Suggested keys are file names without .svg.
+runner-idle / runner-fall-a / runner-fall-b: 24x24.
+Replace Player rectangle with scene.add.sprite(x,y,'runner-idle'); physics.add.existing(sprite).
+Keep display 24x24, origin .5, body.setSize(24,24), offset(0,0), same acceleration, drag and velocity.
+Do not use setTexture on the existing Rectangle: a Rectangle has no texture.
+Optional animation:
+  scene.anims.create({key:'runner-fall', frames:[{key:'runner-fall-a'},{key:'runner-fall-b'}],frameRate:8,repeat:-1});
+Play falling while airborne; use idle texture when grounded. No animation is required to load the assets.
+
+DEV 1 — PARALLAX (not implemented here)
+Three independent 480x800 images: abyss-base (opaque), abyss-circuits, abyss-rails (transparent).
+Use tileSprite(0,0,480,800,key).setOrigin(0).setScrollFactor(0).
+Depths -30/-20/-10, below gameplay and HUD depth 100.
+Each GameScene.update: tilePositionY = camera.scrollY * 0.08 / 0.20 / 0.55.
+The three tiles repeat vertically without baked text or external effects.
+Keep rails decorative: do not add collisions or narrow the agreed world bounds.
+Keep the whole 480x800 playfield, no cropping and no extra desktop/mobile scenes.
+
+DEV 2 — PLATFORMS (not implemented here)
+Physics height is 16; default width 100. Use three parts: left 8x16, tile 16x16, right 8x16.
+For body center x,y and width W >= 16:
+  left image at (x-W/2,y-8), origin(0), native 8x16;
+  tileSprite at (x-W/2+8,y-8), size(W-16,16), origin(0);
+  right image at (x+W/2-8,y-8), origin(0), native 8x16.
+No horizontal stretching of caps, no vertical scaling. Use W>16 for a visible middle.
+Maintain ONE static body and a composite visual that tracks the body; destroy all three pieces in entity.destroy.
+If keeping an invisible physics rectangle, ensure the visuals follow it and its dimensions stay unchanged.
+Moving style is ART ONLY: pink chevrons, reserved for future mechanics; movement is not currently supported.
+Do not implement moving bodies merely by assigning the moving texture.
+After agreed movement/static size changes, refresh the static body as appropriate.
+
+DEV 2 — HAZARDS (not implemented here)
+hazard-mine 24x24, center origin .5, retain 24x24 static physics.
+Transparent corners are visual only: the existing rectangular overlap box is unchanged.
+Optional pulse via alpha/tint tween is presentation only, not a new lethal-state mechanic.
+
+MOBILE INPUT — DEV 1 PROPOSAL, REQUIRES COORDINATION
+Two 64x64 SVG controls, place at (64,736) and (416,736), scrollFactor 0.
+At 360px viewport they display 48x48 CSS px, above the usual 44px touch target.
+Use multiple pointers and persistent left/right intents read by Player.update alongside keyboard.
+Release on pointerup, pointerout, pointercancel, window blur and scene shutdown.
+Keep A/D and arrow keyboard handling; do not synthesize keyboard DOM events.
+Reserve bottom 96 game px for controls, consider safe-area insets with the owner before integration.
+Current game still has keyboard-only movement. Menus support pointer/touch.
+
+HUD / SCALING
+Approved compact HUD: x16,y16,448x64, bottom80.
+Player spawn x240,y100; 24x24 body top88. Gap is now 8 game px.
+No spawn, camera or physics change. Moving gameplay can still pass behind a HUD; owner may decide on a gameplay-safe top margin later.
+Existing config Phaser.Scale.FIT + CENTER_BOTH already preserves aspect ratio 480/800.
+CSS decorates desktop gutters; canvas stays centered, full visible height, never stretched.
+Buttons 348x60 game px -> 261x45 CSS px at 360px wide portrait.
+Browser viewport checks are not a substitute for a physical touch-device test.
+
+FONTS
+Rajdhani Regular (400) and Bold (700), unmodified Google Fonts distributions:
+https://github.com/google/fonts/tree/main/ofl/rajdhani
+Copyright (c) 2014 Indian Type Foundry.
+SIL Open Font License 1.1, bundled as /assets/fonts/OFL-Rajdhani.txt.
+Allows embedding and redistribution with copyright/license, not selling the font alone.
+No remote font requests at runtime. Menu awaits document.fonts.load before canvas text creation.
+Menu, HUD and GameOver use local Rajdhani with monospace fallback.
+Rajdhani does not include Cyrillic; future Ukrainian UI must use a licensed Cyrillic-capable fallback/font.

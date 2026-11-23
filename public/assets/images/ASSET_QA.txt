@@ -1,0 +1,20 @@
+CYBER ABYSS — GAME ART AND RESPONSIVE QA
+Branch: feature/ui-design. Existing coordinates 480x800 retained.
+Build: npm run build PASS (Vite warning: JS chunk >500kB, Phaser).
+Dependencies: restored the existing package-lock through npm ci; 17 packages, 0 audit vulnerabilities. No new dependency or lockfile changes.
+SVG validation: all 15 parse as XML; explicit width, height and viewBox.
+Phaser 3.90 isolated preview: all 15 SVG textures loaded, transparent corner alpha=0 for courier states/mine/controls, player and hazard bodies 24x24, two-frame animation and variable-width platform tiling PASS.
+An initial path mapping error in the isolated preview server was corrected; final preview reports PASS.
+Gameplay console: no errors or warnings during final checks.
+Desktop 1920x1080: canvas CSS 648x1080, centered x636 y0; Menu/Start/HUD/GameOver/Restart PASS.
+Desktop 1366x768: canvas CSS about 460.8x768, centered x452 y0 (Phaser rounds position); all five checks PASS.
+Portrait 390x844: canvas CSS about 390.4x650.66, x0 y96 (subpixel rounding by existing Phaser FIT); all five checks PASS.
+Portrait 360x800: canvas CSS 360x600, x0 y100; all five checks PASS.
+All: internal canvas 480x800, proportional rendering; document scrollWidth <= innerWidth; no horizontal scrolling; titles/results/buttons visible.
+Smallest Start/Restart target: 348x60 internal -> 261x45 CSS px.
+HUD bottom80, initial player body top88: no initial overlap, 8px gap. HUD remains camera-fixed.
+Browser viewport emulation only: not physical iOS/Android testing; mobile movement is not integrated.
+New art is rendered only in the separate QA preview, not inserted into other owners' gameplay modules.
+WorldGenerator and ScoreManager remain stubs: world empty, score/best0, automatic falling GameOver.
+No GameScene, Player, Platform, Obstacle, WorldGenerator, BootScene, config, package or shared documentation changed.
+No commit or push.

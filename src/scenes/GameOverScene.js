@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { SCENE_KEYS, COLORS } from '../utils/constants.js';
 
-const FONT = '"Courier New", monospace';
+const FONT = 'Rajdhani, "Courier New", monospace';
 
 /** Receives results from GameScene; never computes or persists scores. */
 export default class GameOverScene extends Phaser.Scene {
@@ -49,7 +49,7 @@ export default class GameOverScene extends Phaser.Scene {
 
     const button = this.add.container(240, 580);
     const face = this.add.rectangle(0, 0, 348, 60, 0x25132c).setStrokeStyle(2, COLORS.NEON_PINK);
-    button.add([face, this.label(0, 0, 'RESTART  ↻', 23, '#fff0fb').setOrigin(0.5).setFontStyle('bold')]);
+    button.add([face, this.label(0, 0, 'RESTART  ↻', 26, '#fff0fb').setOrigin(0.5).setFontStyle('bold')]);
     face.setInteractive({ useHandCursor: true });
     const highlight = (active) => {
       face.setFillStyle(active ? 0x48203f : 0x25132c);
@@ -77,7 +77,7 @@ export default class GameOverScene extends Phaser.Scene {
   }
 
   label(x, y, text, size, color) {
-    return this.add.text(x, y, text, { fontFamily: FONT, fontSize: size + 'px', color });
+    return this.add.text(x, y, text, { fontFamily: FONT, fontSize: Math.max(size, 16) + 'px', color });
   }
 
   restart(event) {

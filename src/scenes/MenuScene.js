@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { SCENE_KEYS, COLORS } from '../utils/constants.js';
 
-const FONT = '"Courier New", monospace';
+const FONT = 'Rajdhani, "Courier New", monospace';
 
 /** Presentation only. GameScene owns the run. */
 export default class MenuScene extends Phaser.Scene {
@@ -9,7 +9,24 @@ export default class MenuScene extends Phaser.Scene {
     super(SCENE_KEYS.MENU);
   }
 
-  create() {
+  async create() {
+    // Canvas text must be created after local web fonts are ready.
+    const run = {};
+    this.fontRun = run;
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { this.fontRun = null; });
+    try {
+      await Promise.all([
+        document.fonts.load('400 16px Rajdhani'),
+        document.fonts.load('700 80px Rajdhani'),
+      ]);
+    } catch (error) {
+      console.warn('UI font unavailable; using the system fallback.', error);
+    }
+    if (this.fontRun !== run) return;
+    this.createInterface();
+  }
+
+  createInterface() {
     this.starting = false;
     this.cameras.main.setBackgroundColor(COLORS.BACKGROUND);
     const grid = this.add.graphics();
@@ -27,7 +44,7 @@ export default class MenuScene extends Phaser.Scene {
     this.label(444, 42, '01', 12, '#ff2bd6').setOrigin(1, 0);
     this.add.rectangle(36, 72, 408, 1, COLORS.NEON_CYAN, 0.35).setOrigin(0);
     this.label(240, 166, '[ SYSTEM ONLINE ]', 13, '#b5a1ff').setOrigin(0.5);
-    const title = this.label(240, 265, 'CYBER\nABYSS', 72, '#ecfbff')
+    const title = this.label(240, 265, 'CYBER\nABYSS', 80, '#ecfbff')
       .setOrigin(0.5).setAlign('center').setFontStyle('bold')
       .setLineSpacing(-10).setShadow(0, 0, '#00f0ff', 22, true, true);
     this.label(240, 382, 'DESCEND INTO THE DIGITAL ABYSS.', 16, '#a6c4d8').setOrigin(0.5);
@@ -37,7 +54,7 @@ export default class MenuScene extends Phaser.Scene {
     const glow = this.add.rectangle(0, 0, 370, 76, COLORS.NEON_CYAN, 0.06);
     const face = this.add.rectangle(0, 0, 348, 60, 0x0a2030)
       .setStrokeStyle(2, COLORS.NEON_CYAN);
-    const text = this.label(0, 0, 'START GAME  ↓', 23, '#e8fcff').setOrigin(0.5).setFontStyle('bold');
+    const text = this.label(0, 0, 'START GAME  ↓', 26, '#e8fcff').setOrigin(0.5).setFontStyle('bold');
     button.add([glow, face, text]);
     face.setInteractive({ useHandCursor: true });
     const highlight = (active) => {
@@ -68,7 +85,7 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   label(x, y, text, size, color) {
-    return this.add.text(x, y, text, { fontFamily: FONT, fontSize: size + 'px', color });
+    return this.add.text(x, y, text, { fontFamily: FONT, fontSize: Math.max(size, 16) + 'px', color });
   }
 
   startGame(event) {
