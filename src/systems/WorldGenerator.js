@@ -99,7 +99,7 @@ const MAX_HORIZONTAL_SHIFT = 80;
 const PLATFORM_HALF_HEIGHT = 8;
 const CLEANUP_BUFFER = 300;
 const OBSTACLE_CHANCE = 0.18;
-const EDGE_CLEARANCE = 38;
+const EDGE_CLEARANCE = 18;
 
 
 function randomBetween(min, max) {
