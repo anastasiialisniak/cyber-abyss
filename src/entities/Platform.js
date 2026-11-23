@@ -13,7 +13,7 @@ export default class Platform {
   }
 
   create(x, y, width = 100) {
-    // Placeholder visual with an Arcade static body. Replace with real sprite.
+    this.destroy();
     this.gameObject = this.scene.add.rectangle(x, y, width, 16, COLORS.NEON_PURPLE);
     this.scene.physics.add.existing(this.gameObject, true);
     this.group?.add(this.gameObject);
@@ -25,7 +25,9 @@ export default class Platform {
   }
 
   destroy() {
-    this.gameObject?.destroy();
+    if (this.gameObject?.active) {
+      this.gameObject.destroy();
+    }
     this.gameObject = null;
   }
 }
