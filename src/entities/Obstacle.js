@@ -13,7 +13,7 @@ export default class Obstacle {
   }
 
   create(x, y) {
-    // Placeholder visual with an Arcade static body. Replace with real sprite.
+    this.destroy();
     this.gameObject = this.scene.add.rectangle(x, y, 24, 24, COLORS.NEON_PINK);
     this.scene.physics.add.existing(this.gameObject, true);
     this.group?.add(this.gameObject);
@@ -25,7 +25,9 @@ export default class Obstacle {
   }
 
   destroy() {
-    this.gameObject?.destroy();
+    if (this.gameObject?.active) {
+      this.gameObject.destroy();
+    }
     this.gameObject = null;
   }
 }
