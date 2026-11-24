@@ -1,5 +1,4 @@
-﻿
-/**
+﻿/**
  * Audio facade over Phaser's sound manager.
  * Owner: Game Systems, Effects & QA.
  *
@@ -17,7 +16,7 @@ export default class AudioManager {
     if (!this.scene?.sound || !key) return;
 
     try {
-      if (!this.scene.cache.audio.exists(key)) return;
+      if (!this.scene?.cache?.audio?.exists(key)) return;
 
       this.scene.sound.play(key);
     } catch (error) {
@@ -28,21 +27,32 @@ export default class AudioManager {
   playMusic(key) {
     if (!this.scene?.sound || !key) return;
 
+    let musicInstance = null;
+
     try {
-      if (!this.scene.cache.audio.exists(key)) return;
+      if (!this.scene?.cache?.audio?.exists(key)) return;
 
       if (this.music?.key === key && this.music.isPlaying) return;
 
       this.stopMusic();
 
-      this.music = this.scene.sound.add(key, {
+      musicInstance = this.scene.sound.add(key, {
         loop: true,
         volume: 0.5,
       });
 
-      this.music.play();
+      this.music = musicInstance;
+      musicInstance.play();
     } catch (error) {
       console.warn(`Could not play music "${key}":`, error);
+
+      try {
+        musicInstance?.stop?.();
+        musicInstance?.destroy?.();
+      } catch (cleanupError) {
+        console.warn('Could not clean up music:', cleanupError);
+      }
+
       this.music = null;
     }
   }
@@ -50,13 +60,14 @@ export default class AudioManager {
   stopMusic() {
     if (!this.music) return;
 
+    const musicInstance = this.music;
+    this.music = null;
+
     try {
-      this.music.stop();
-      this.music.destroy();
+      musicInstance.stop();
+      musicInstance.destroy();
     } catch (error) {
       console.warn('Could not stop music:', error);
     }
-
-    this.music = null;
   }
 }

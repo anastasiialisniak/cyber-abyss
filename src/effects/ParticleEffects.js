@@ -11,7 +11,11 @@ export default class ParticleEffects {
   }
 
   createLandingBurst(x, y) {
-    if (!this.scene || !this.scene.add || !this.scene.tweens) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      return;
+    }
+
+    if (!this.scene?.add || !this.scene?.tweens) {
       return;
     }
 
@@ -40,16 +44,21 @@ export default class ParticleEffects {
         duration: 350,
         onComplete: () => {
           this.activeParticles.delete(particle);
-          particle.destroy();
+          particle?.destroy?.();
         },
       });
     }
   }
 
   destroy() {
+    const tweens = this.scene?.tweens;
+
     this.activeParticles.forEach((particle) => {
-      this.scene.tweens.killTweensOf(particle);
-      particle.destroy();
+      if (tweens && particle) {
+        tweens.killTweensOf?.(particle);
+      }
+
+      particle?.destroy?.();
     });
 
     this.activeParticles.clear();

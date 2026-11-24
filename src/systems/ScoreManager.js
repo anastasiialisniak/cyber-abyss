@@ -1,7 +1,10 @@
-﻿/**
-* Score tracking.
-* Pure logic, no Phaser dependency.
-*/
+﻿
+/**
+ * Score tracking.
+ * Pure logic, no Phaser dependency.
+ */
+
+import { STORAGE_KEYS } from '../utils/constants.js';
 
 export default class ScoreManager {
   constructor() {
@@ -12,7 +15,19 @@ export default class ScoreManager {
 
   loadBestScore() {
     try {
-      return Number(localStorage.getItem('cyberAbyssBestScore')) || 0;
+      const storedScore = Number(
+        localStorage.getItem(STORAGE_KEYS.BEST_SCORE)
+      );
+
+      if (
+        !Number.isFinite(storedScore) ||
+        !Number.isInteger(storedScore) ||
+        storedScore < 0
+      ) {
+        return 0;
+      }
+
+      return storedScore;
     } catch {
       return 0;
     }
@@ -28,14 +43,16 @@ export default class ScoreManager {
     }
 
     const distance = Math.max(0, playerY - this.startY);
-    this.score = Math.floor(distance / 10);
+    const calculatedScore = Math.floor(distance / 10);
 
-    if (this.score > this.bestScore) { 
+    this.score = Math.max(this.score, calculatedScore);
+
+    if (this.score > this.bestScore) {
       this.bestScore = this.score;
 
       try {
         localStorage.setItem(
-          'cyberAbyssBestScore',
+          STORAGE_KEYS.BEST_SCORE,
           String(this.bestScore)
         );
       } catch {

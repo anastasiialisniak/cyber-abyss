@@ -31,9 +31,9 @@ export default class ScreenEffects {
   }
 
   destroy() {
-    if (!this.scene?.cameras?.main) return;
+    const camera = this.scene?.cameras?.main;
+    if (!camera) return;
 
-    this.scene.cameras.main.stopShake();
-    this.scene.cameras.main.stopFlash();
+    camera.resetFX();
   }
 }

@@ -11,10 +11,14 @@ export default class GameStateManager {
   }
 
   startGame() {
+    if (this.state !== GAME_STATES.READY) return;
+
     this.state = GAME_STATES.PLAYING;
   }
 
   endGame() {
+    if (this.state !== GAME_STATES.PLAYING) return;
+
     this.state = GAME_STATES.GAME_OVER;
   }
 
