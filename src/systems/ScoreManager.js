@@ -1,17 +1,65 @@
-﻿/**
- * Score tracking. Owner: Game Systems, Effects & QA.
+﻿
+/**
+ * Score tracking.
  * Pure logic, no Phaser dependency.
- * Contract: updateScore(playerY) -> number, getScore(), getBestScore(), reset().
- * reset() clears the current score only; the best score is kept.
  */
+
+import { STORAGE_KEYS } from '../utils/constants.js';
+
 export default class ScoreManager {
   constructor() {
     this.score = 0;
-    this.bestScore = 0;
+    this.bestScore = this.loadBestScore();
+    this.startY = null;
   }
 
-  // Called each frame with the player's world Y. Returns the current score.
-  updateScore(playerY) { // eslint-disable-line no-unused-vars
+  loadBestScore() {
+    try {
+      const storedScore = Number(
+        localStorage.getItem(STORAGE_KEYS.BEST_SCORE)
+      );
+
+      if (
+        !Number.isFinite(storedScore) ||
+        !Number.isInteger(storedScore) ||
+        storedScore < 0
+      ) {
+        return 0;
+      }
+
+      return storedScore;
+    } catch {
+      return 0;
+    }
+  }
+
+  updateScore(playerY) {
+    if (!Number.isFinite(playerY)) {
+      return this.score;
+    }
+
+    if (this.startY === null) {
+      this.startY = playerY;
+    }
+
+    const distance = Math.max(0, playerY - this.startY);
+    const calculatedScore = Math.floor(distance / 10);
+
+    this.score = Math.max(this.score, calculatedScore);
+
+    if (this.score > this.bestScore) {
+      this.bestScore = this.score;
+
+      try {
+        localStorage.setItem(
+          STORAGE_KEYS.BEST_SCORE,
+          String(this.bestScore)
+        );
+      } catch {
+        // Saving may be unavailable in some browsers.
+      }
+    }
+
     return this.score;
   }
 
@@ -25,5 +73,6 @@ export default class ScoreManager {
 
   reset() {
     this.score = 0;
+    this.startY = null;
   }
 }
